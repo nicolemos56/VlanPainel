@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Topologia da VLAN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    
+    <style>
+        #mynetwork {
+            width: 100%;
+            height: 400px; /* Reduzi um pouco para caber o painel em baixo */
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900 pb-10">
+
+    <!-- Navbar -->
+    <nav class="bg-slate-800 text-white shadow-lg p-4 mb-6">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold"><i class="fa-solid fa-diagram-project text-blue-400"></i> Diagrama de Rede</h1>
+            <a href="/" class="text-gray-300 hover:text-white"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4">
+        
+        <!-- Cabeçalho -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">VLAN {{ vlan.id }} - <span class="text-blue-600">{{ vlan.name }}</span></h2>
+                <p class="text-gray-500 text-sm mt-1">Diagrama lógico e gestão de membros.</p>
+            </div>
+            <div class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg border border-blue-100">
+                <i class="fa-solid fa-computer"></i> Dispositivos: <strong>{{ devices|length }}</strong>
+            </div>
+        </div>
+
+        <!-- Área do Diagrama -->
+        <div class="bg-white rounded-lg shadow p-2 mb-8">
+            <div id="mynetwork"></div>
+        </div>
+
+        <!-- PAINEL DE EDIÇÃO (NOVO) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- COLUNA 1: REMOVER (Membros Atuais) -->
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fa-solid fa-circle-minus text-red-500 mr-2"></i> Remover desta VLAN
+                </h3>
+                <p class="text-sm text-gray-500 mb-4">Ao remover, o dispositivo volta para a <strong>VLAN 1 (Default)</strong>.</p>
+                
+                <div class="space-y-2">
+                    {% for dev in devices %}
+                    <form action="/topology/update" method="post" class="flex items-center justify-between bg-gray-50 p-3 rounded border hover:bg-red-50 transition">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-desktop text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-bold text-sm">Gi{{ dev.name }}</div>
+                                <div class="text-xs text-gray-500">{{ dev.description }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Inputs escondidos para enviar dados -->
+                        <input type="hidden" name="interface_name" value="{{ dev.name }}">
+                        <input type="hidden" name="target_vlan" value="1"> <!-- Manda para VLAN 1 -->
+                        <input type="hidden" name="return_to_vlan" value="{{ vlan.id }}">
+
+                        <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-sm border border-red-200 bg-white px-3 py-1 rounded hover:bg-red-500 hover:text-white transition">
+                            Remover
+                        </button>
+                    </form>
+                    {% else %}
+                    <p class="text-center text-gray-400 italic py-4">Nenhum dispositivo nesta VLAN.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- COLUNA 2: ADICIONAR (Disponíveis) -->
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fa-solid fa-circle-plus text-green-500 mr-2"></i> Adicionar a esta VLAN
+                </h3>
+                <p class="text-sm text-gray-500 mb-4">Dispositivos disponíveis noutras VLANs.</p>
+
+                <div class="space-y-2 max-h-64 overflow-y-auto pr-2"> <!-- Scroll se tiver muitos -->
+                    {% for dev in available %}
+                    <form action="/topology/update" method="post" class="flex items-center justify-between bg-gray-50 p-3 rounded border hover:bg-green-50 transition">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-plug text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-bold text-sm">Gi{{ dev.name }}</div>
+                                <div class="text-xs text-gray-500">
+                                    {{ dev.description }} 
+                                    <span class="ml-1 text-xs bg-gray-200 px-1 rounded">Vlan {{ dev.switchport.access.vlan }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inputs escondidos -->
+                        <input type="hidden" name="interface_name" value="{{ dev.name }}">
+                        <input type="hidden" name="target_vlan" value="{{ vlan.id }}"> <!-- Manda para ESTA VLAN -->
+                        <input type="hidden" name="return_to_vlan" value="{{ vlan.id }}">
+
+                        <button type="submit" class="text-green-600 hover:text-green-700 font-medium text-sm border border-green-200 bg-white px-3 py-1 rounded hover:bg-green-600 hover:text-white transition">
+                            Adicionar
+                        </button>
+                    </form>
+                    {% else %}
+                    <p class="text-center text-gray-400 italic py-4">Todos os dispositivos já estão aqui!</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SCRIPT VIS.JS (Mantido igual) -->
+    <script type="text/javascript">
+        var devices = {{ devices | tojson }};
+        var vlanName = "{{ vlan.name }}";
+        var nodes = [];
+        var edges = [];
+
+        nodes.push({id: 0, label: "Switch\n(VLAN " + "{{ vlan.id }}" + ")", image: "https://img.icons8.com/color/96/switch.png", shape: "image", size: 40});
+
+        if (devices.length === 0) {
+            nodes.push({id: 999, label: "VLAN Vazia", shape: "box", color: "#fee2e2"});
+        } else {
+            devices.forEach(function(dev, index) {
+                var nodeId = index + 1;
+                var iconUrl = "https://img.icons8.com/color/96/workstation.png";
+                if (dev.description.toLowerCase().includes("router")) iconUrl = "https://img.icons8.com/color/96/router.png";
+                else if (dev.description.toLowerCase().includes("printer")) iconUrl = "https://img.icons8.com/color/96/print.png";
+
+                nodes.push({id: nodeId, label: dev.description + "\n(Gi" + dev.name + ")", image: iconUrl, shape: "image"});
+                edges.push({from: 0, to: nodeId, length: 150, label: "Gi" + dev.name, font: {align: 'middle', size: 10}});
+            });
+        }
+
+        var container = document.getElementById('mynetwork');
+        var data = {nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges)};
+        var options = {
+            physics: {solver: 'forceAtlas2Based'},
+            edges: {color: {color:'#2d3748'}, width: 2},
+            interaction: {hover: true}
+        };
+        new vis.Network(container, data, options);
+    </script>
+</body>
+</html>

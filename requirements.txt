@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+requests
+jinja2
+python-multipart
+netmiko    # se se usar SSH/Packet Tracer
+ncclient   # se se usar NETCONF com sandbox

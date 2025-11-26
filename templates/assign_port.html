@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerir Portas | Cisco DevNet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+
+    <nav class="bg-slate-800 text-white shadow-lg p-4 mb-8">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold"><i class="fa-solid fa-network-wired text-blue-400"></i> NetManager</h1>
+            <a href="/" class="text-gray-300 hover:text-white"><i class="fa-solid fa-arrow-left"></i> Voltar às VLANs</a>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- COLUNA 1: Configurar Porta -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fa-solid fa-plug text-green-600"></i> Atribuir Porta</h2>
+            <form action="/assign" method="post" class="space-y-4">
+                
+                <div>
+                    <label class="block font-bold text-gray-700">Escolha a Interface:</label>
+                    <select name="interface_name" class="w-full border p-2 rounded bg-gray-50">
+                        {% for intf in interfaces %}
+                        <option value="{{ intf['name'] }}">GigabitEthernet{{ intf['name'] }} ({{ intf['description'] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-gray-700">Mover para VLAN:</label>
+                    <select name="vlan_id" class="w-full border p-2 rounded bg-gray-50">
+                        {% for v in vlans %}
+                        <option value="{{ v['id'] }}">{{ v['id'] }} - {{ v['name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded shadow transition">
+                    Aplicar Configuração
+                </button>
+            </form>
+        </div>
+
+        <!-- COLUNA 2: Estado Atual das Portas -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fa-solid fa-eye text-blue-600"></i> Estado das Interfaces</h2>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-600 text-xs uppercase">
+                        <th class="p-3 border-b">Interface</th>
+                        <th class="p-3 border-b">VLAN Atual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for intf in interfaces %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-semibold text-gray-700">
+                            GigabitEthernet{{ intf['name'] }}
+                            <div class="text-xs text-gray-400 font-normal">{{ intf['description'] }}</div>
+                        </td>
+                        <td class="p-3">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">
+                                VLAN {{ intf['switchport']['access']['vlan'] }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

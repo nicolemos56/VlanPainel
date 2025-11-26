@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar VLAN | Cisco DevNet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden">
+        
+        <!-- Cabeçalho -->
+        <div class="bg-slate-800 px-6 py-4">
+            <h2 class="text-xl font-bold text-white flex items-center">
+                <i class="fa-solid fa-circle-plus mr-3 text-blue-400"></i> Adicionar VLAN
+            </h2>
+        </div>
+
+        <!-- Formulário -->
+        <form action="/add" method="post" class="px-8 py-6 space-y-4">
+            
+            <!-- Input ID -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="vlan_id">
+                    VLAN ID
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fa-solid fa-hashtag"></i>
+                    </span>
+                    <input class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                           id="vlan_id" name="vlan_id" type="number" min="2" max="4094" placeholder="Ex: 100" required>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Insira um ID entre 2 e 4094.</p>
+            </div>
+
+            <!-- Input Nome -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="vlan_name">
+                    Nome da VLAN
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fa-solid fa-tag"></i>
+                    </span>
+                    <input class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                           id="vlan_name" name="vlan_name" type="text" placeholder="Ex: Vendas_Piso1" required>
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex items-center justify-between pt-4">
+                <a href="/" class="text-gray-500 hover:text-gray-700 font-medium text-sm transition">
+                    Cancelar
+                </a>
+                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5" type="submit">
+                    Criar VLAN
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard VLAN | Cisco DevNet</title>
+    <!-- Tailwind CSS (Estilo Moderno) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ícones (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+
+    <!-- Barra de Navegação -->
+    <nav class="bg-slate-800 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-network-wired text-blue-400 text-2xl"></i>
+                <span class="text-xl font-bold tracking-wide">NetManager <span class="text-blue-400">DevNet</span></span>
+            </div>
+            <div class="text-sm text-gray-400">
+                Status: <span class="text-green-400 font-semibold">● Online</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="max-w-4xl mx-auto mt-10 px-4">
+        
+        <!-- Cartão Principal -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            
+            <!-- Cabeçalho do Cartão -->
+            <div class="bg-white px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-gray-800">
+                    <i class="fa-solid fa-list mr-2 text-slate-500"></i> Lista de VLANs
+                </h2>
+                <!-- Botão Adicionar -->
+                <a href="/add" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-200 shadow-sm flex items-center">
+                    <i class="fa-solid fa-plus mr-2"></i> Nova VLAN
+                </a>
+                <a href="/assign" class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-200 shadow-sm flex items-center ml-2">
+    <i class="fa-solid fa-plug mr-2"></i> Gerir Portas
+</a>
+            </div>
+
+            <!-- Tabela -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+                            <th class="px-6 py-3 font-semibold border-b">ID</th>
+                            <th class="px-6 py-3 font-semibold border-b">Nome da VLAN</th>
+                            <th class="px-6 py-3 font-semibold border-b text-center">Estado</th>
+                            <th class="px-6 py-3 font-semibold border-b text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for v in vlans %}
+                        <tr class="hover:bg-blue-50 transition duration-150">
+                            <td class="px-6 py-4 font-medium text-blue-600">
+                                #{{ v['id'] }}
+                            </td>
+                           <td class="px-6 py-4 font-semibold text-gray-700">
+    <a href="/topology/{{ v['id'] }}" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center">
+        <i class="fa-solid fa-sitemap mr-2 text-gray-400"></i>
+        {{ v['name'] }}
+    </a>
+</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                    Ativa
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="/delete/{{ v['id'] }}" 
+                                   onclick="return confirm('Tem a certeza que deseja apagar a VLAN {{ v.id }}? Esta ação é irreversível.');"
+                                   class="text-red-500 hover:text-red-700 transition duration-200 bg-red-50 hover:bg-red-100 p-2 rounded-md"
+                                   title="Apagar VLAN">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-10 text-center text-gray-500">
+                                <i class="fa-solid fa-circle-exclamation text-4xl mb-3 text-gray-300"></i><br>
+                                Nenhuma VLAN encontrada no dispositivo.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Rodapé da Tabela -->
+            <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 text-xs text-gray-500 flex justify-between">
+                <span>Total de VLANs: <strong>{{ vlans|length }}</strong></span>
+                <span>Conectado via: Mock Server</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
