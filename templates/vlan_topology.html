@@ -46,112 +46,224 @@
         </div>
 
         <!-- PAINEL DE EDIÇÃO (NOVO) -->
+       <!-- PAINEL DE EDIÇÃO (REFATORADO) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             
-            <!-- COLUNA 1: REMOVER (Membros Atuais) -->
+            <!-- COLUNA 1: REMOVER -->
             <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <i class="fa-solid fa-circle-minus text-red-500 mr-2"></i> Remover desta VLAN
+                <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                    <i class="fa-solid fa-circle-minus text-red-500 mr-2"></i> Remover Dispositivo
                 </h3>
-                <p class="text-sm text-gray-500 mb-4">Ao remover, o dispositivo volta para a <strong>VLAN 1 (Default)</strong>.</p>
                 
-                <div class="space-y-2">
-                    {% for dev in devices %}
-                    <form action="/topology/update" method="post" class="flex items-center justify-between bg-gray-50 p-3 rounded border hover:bg-red-50 transition">
-                        <div class="flex items-center">
-                            <i class="fa-solid fa-desktop text-gray-400 mr-3"></i>
-                            <div>
-                                <div class="font-bold text-sm">Gi{{ dev.name }}</div>
-                                <div class="text-xs text-gray-500">{{ dev.description }}</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Inputs escondidos para enviar dados -->
-                        <input type="hidden" name="interface_name" value="{{ dev.name }}">
-                        <input type="hidden" name="target_vlan" value="1"> <!-- Manda para VLAN 1 -->
-                        <input type="hidden" name="return_to_vlan" value="{{ vlan.id }}">
-
-                        <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-sm border border-red-200 bg-white px-3 py-1 rounded hover:bg-red-500 hover:text-white transition">
-                            Remover
-                        </button>
-                    </form>
-                    {% else %}
-                    <p class="text-center text-gray-400 italic py-4">Nenhum dispositivo nesta VLAN.</p>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- COLUNA 2: ADICIONAR (Disponíveis) -->
-            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <i class="fa-solid fa-circle-plus text-green-500 mr-2"></i> Adicionar a esta VLAN
-                </h3>
-                <p class="text-sm text-gray-500 mb-4">Dispositivos disponíveis noutras VLANs.</p>
-
-                <div class="space-y-2 max-h-64 overflow-y-auto pr-2"> <!-- Scroll se tiver muitos -->
-                    {% for dev in available %}
-                    <form action="/topology/update" method="post" class="flex items-center justify-between bg-gray-50 p-3 rounded border hover:bg-green-50 transition">
-                        <div class="flex items-center">
-                            <i class="fa-solid fa-plug text-gray-400 mr-3"></i>
-                            <div>
-                                <div class="font-bold text-sm">Gi{{ dev.name }}</div>
-                                <div class="text-xs text-gray-500">
-                                    {{ dev.description }} 
-                                    <span class="ml-1 text-xs bg-gray-200 px-1 rounded">Vlan {{ dev.switchport.access.vlan }}</span>
+                {% if vlan.id == 1 %}
+                    <!-- Se for a VLAN 1, não faz sentido remover (já estão na default) -->
+                    <p class="text-sm text-gray-500">Esta é a VLAN Default. Os dispositivos removidos de outras redes vêm para aqui.</p>
+                    <div class="mt-4 p-3 bg-yellow-50 text-yellow-800 text-sm rounded border border-yellow-200">
+                        <i class="fa-solid fa-lock"></i> O <strong>Gateway</strong> deve permanecer sempre aqui.
+                    </div>
+                {% else %}
+                    <p class="text-sm text-gray-500 mb-4">
+                        Liberta a porta e envia o dispositivo de volta para a <strong>VLAN 1 (Default)</strong>.
+                    </p>
+                    
+                    <div class="space-y-2">
+                        {% for dev in devices %}
+                        <form action="/topology/update" method="post" class="flex items-center justify-between bg-gray-50 p-3 rounded border hover:bg-red-50 transition">
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-desktop text-gray-400 mr-3"></i>
+                                <div>
+                                    <div class="font-bold text-sm">Gi{{ dev.name }}</div>
+                                    <div class="text-xs text-gray-500">{{ dev.description }}</div>
                                 </div>
                             </div>
-                        </div>
+                            
+                            <input type="hidden" name="interface_name" value="{{ dev.name }}">
+                            <input type="hidden" name="target_vlan" value="1"> <!-- Força ida para VLAN 1 -->
+                            <input type="hidden" name="return_to_vlan" value="{{ vlan.id }}">
 
-                        <!-- Inputs escondidos -->
-                        <input type="hidden" name="interface_name" value="{{ dev.name }}">
-                        <input type="hidden" name="target_vlan" value="{{ vlan.id }}"> <!-- Manda para ESTA VLAN -->
-                        <input type="hidden" name="return_to_vlan" value="{{ vlan.id }}">
-
-                        <button type="submit" class="text-green-600 hover:text-green-700 font-medium text-sm border border-green-200 bg-white px-3 py-1 rounded hover:bg-green-600 hover:text-white transition">
-                            Adicionar
-                        </button>
-                    </form>
-                    {% else %}
-                    <p class="text-center text-gray-400 italic py-4">Todos os dispositivos já estão aqui!</p>
-                    {% endfor %}
-                </div>
+                            <button type="submit" class="text-red-500 hover:text-red-700 font-medium text-sm border border-red-200 bg-white px-3 py-1 rounded hover:bg-red-500 hover:text-white transition">
+                                Libertar Porta
+                            </button>
+                        </form>
+                        {% else %}
+                        <p class="text-center text-gray-400 italic py-4">VLAN Vazia.</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
+            <!-- COLUNA 2: ADICIONAR (Apenas Livres) -->
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                    <i class="fa-solid fa-circle-plus text-green-500 mr-2"></i> Adicionar Dispositivo Livre
+                </h3>
+                
+                {% if vlan.id == 1 %}
+                     <p class="text-sm text-gray-500">Para adicionar dispositivos aqui, remova-os das outras VLANs.</p>
+                {% else %}
+                    <p class="text-sm text-gray-500 mb-4">
+                        Apenas dispositivos que estão atualmente na <strong>VLAN 1 (Livres)</strong> aparecem aqui.
+                    </p>
+
+                    <div class="space-y-2 max-h-64 overflow-y-auto pr-2">
+                        {% for dev in available %}
+                        <form action="/topology/update" method="post" class="flex items-center justify-between bg-gray-50 p-3 rounded border hover:bg-green-50 transition">
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-plug text-gray-400 mr-3"></i>
+                                <div>
+                                    <div class="font-bold text-sm">Gi{{ dev.name }}</div>
+                                    <div class="text-xs text-gray-500">
+                                        {{ dev.description }} 
+                                        <span class="ml-1 text-[10px] bg-green-100 text-green-800 px-1 rounded border border-green-200">LIVRE</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="interface_name" value="{{ dev.name }}">
+                            <input type="hidden" name="target_vlan" value="{{ vlan.id }}">
+                            <input type="hidden" name="return_to_vlan" value="{{ vlan.id }}">
+
+                            <button type="submit" class="text-green-600 hover:text-green-700 font-medium text-sm border border-green-200 bg-white px-3 py-1 rounded hover:bg-green-600 hover:text-white transition">
+                                Associar
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="text-center py-6">
+                            <i class="fa-solid fa-check-circle text-gray-300 text-3xl mb-2"></i>
+                            <p class="text-gray-400 italic text-sm">Não há dispositivos livres.</p>
+                            <p class="text-xs text-gray-400 mt-1">Remova dispositivos de outras VLANs para que apareçam aqui.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
         </div>
 
     </div>
 
     <!-- SCRIPT VIS.JS (Mantido igual) -->
-    <script type="text/javascript">
+       <script type="text/javascript">
+        // 1. Preparar os dados vindos do Python
         var devices = {{ devices | tojson }};
         var vlanName = "{{ vlan.name }}";
+
+        // 2. Criar os Nós (Nodes)
         var nodes = [];
         var edges = [];
 
-        nodes.push({id: 0, label: "Switch\n(VLAN " + "{{ vlan.id }}" + ")", image: "https://img.icons8.com/color/96/switch.png", shape: "image", size: 40});
+        // Nó Central: O Switch
+        nodes.push({
+            id: 0, 
+            label: "Switch\n(VLAN " + "{{ vlan.id }}" + ")", 
+            image: "https://img.icons8.com/color/96/switch.png", 
+            shape: "image", 
+            size: 50
+        });
 
         if (devices.length === 0) {
             nodes.push({id: 999, label: "VLAN Vazia", shape: "box", color: "#fee2e2"});
         } else {
             devices.forEach(function(dev, index) {
                 var nodeId = index + 1;
-                var iconUrl = "https://img.icons8.com/color/96/workstation.png";
-                if (dev.description.toLowerCase().includes("router")) iconUrl = "https://img.icons8.com/color/96/router.png";
-                else if (dev.description.toLowerCase().includes("printer")) iconUrl = "https://img.icons8.com/color/96/print.png";
+                
+                // Normalizar o texto para minúsculas para facilitar a comparação
+                var desc = dev.description.toLowerCase();
+                
+                // Ícone Padrão (Caso não encontre nada)
+                var iconUrl = "https://img.icons8.com/color/96/workstation.png"; 
 
-                nodes.push({id: nodeId, label: dev.description + "\n(Gi" + dev.name + ")", image: iconUrl, shape: "image"});
-                edges.push({from: 0, to: nodeId, length: 150, label: "Gi" + dev.name, font: {align: 'middle', size: 10}});
+                // --- LÓGICA DE DETEÇÃO DE ÍCONES ---
+                
+                // 1. Routers / Gateways
+                if (desc.includes("router") || desc.includes("gateway")) {
+                    iconUrl = "https://img.icons8.com/color/96/router.png";
+                } 
+                // 2. Impressoras
+                else if (desc.includes("impressora") || desc.includes("printer")) {
+                    iconUrl = "https://img.icons8.com/color/96/print.png";
+                } 
+                // 3. Servidores e NAS
+                else if (desc.includes("servidor") || desc.includes("server") || desc.includes("nas") || desc.includes("storage")) {
+                    iconUrl = "https://img.icons8.com/color/96/server.png";
+                } 
+                // 4. Câmaras de Segurança
+                else if (desc.includes("camara") || desc.includes("cctv") || desc.includes("webcam")) {
+                    iconUrl = "https://img.icons8.com/color/96/web-camera.png";
+                } 
+                // 5. Telefones VoIP
+                else if (desc.includes("telefone") || desc.includes("phone") || desc.includes("voip")) {
+                    iconUrl = "https://img.icons8.com/color/96/landline-phone.png";
+                } 
+                // 6. Wi-Fi / Access Points
+                else if (desc.includes("wifi") || desc.includes("access_point") || desc.includes("ap")) {
+                    iconUrl = "https://img.icons8.com/color/96/wi-fi-router.png";
+                } 
+                // 7. TVs e Ecrãs
+                else if (desc.includes("tv") || desc.includes("smart") || desc.includes("monitor")) {
+                    iconUrl = "https://img.icons8.com/color/96/monitor.png";
+                } 
+                // 8. Tablets e POS
+                else if (desc.includes("tablet") || desc.includes("pos") || desc.includes("ipad")) {
+                    iconUrl = "https://img.icons8.com/color/96/ipad.png";
+                } 
+                // 9. IoT Genérico (Leitores, Termostatos, Relógios)
+                else if (desc.includes("leitor") || desc.includes("relogio") || desc.includes("termostato") || desc.includes("iot")) {
+                    iconUrl = "https://img.icons8.com/color/96/electronics.png";
+                }
+                // 10. Laptops (Se tiver 'laptop' no nome, usa ícone diferente de PC)
+                else if (desc.includes("laptop") || desc.includes("portatil")) {
+                    iconUrl = "https://img.icons8.com/color/96/laptop.png";
+                }
+
+                // Adicionar o Nó
+                nodes.push({
+                    id: nodeId, 
+                    label: dev.description + "\n(Gi" + dev.name + ")", 
+                    image: iconUrl, 
+                    shape: "image"
+                });
+
+                // Adicionar o Cabo
+                edges.push({
+                    from: 0, 
+                    to: nodeId, 
+                    length: 160, 
+                    label: "Gi" + dev.name, 
+                    font: {align: 'middle', size: 10}
+                });
             });
         }
 
+        // 3. Renderizar com Vis.js
         var container = document.getElementById('mynetwork');
-        var data = {nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges)};
+        var data = {
+            nodes: new vis.DataSet(nodes),
+            edges: new vis.DataSet(edges)
+        };
         var options = {
-            physics: {solver: 'forceAtlas2Based'},
-            edges: {color: {color:'#2d3748'}, width: 2},
+            physics: {
+                solver: 'forceAtlas2Based',
+                forceAtlas2Based: {
+                    gravitationalConstant: -50,
+                    centralGravity: 0.01,
+                    springConstant: 0.08,
+                    springLength: 100,
+                    damping: 0.4,
+                    avoidOverlap: 0.5
+                }
+            },
+            edges: {
+                color: {color:'#2d3748', highlight:'#3182ce'},
+                width: 2,
+                shadow: true
+            },
+            nodes: {
+                shadow: true
+            },
             interaction: {hover: true}
         };
         new vis.Network(container, data, options);
+
     </script>
 </body>
 </html>

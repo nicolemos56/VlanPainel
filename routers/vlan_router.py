@@ -28,7 +28,10 @@ async def delete_route(vlan_id: int):
     delete_vlan(vlan_id)
     return RedirectResponse(url="/", status_code=303)
 
-# --- TOPOLOGIA ---
+# routers/vlan_router.py
+
+# ... (Manter imports)
+
 @router.get("/topology/{vlan_id}")
 async def vlan_topology(request: Request, vlan_id: int):
     todas_vlans = get_vlans()
@@ -36,17 +39,26 @@ async def vlan_topology(request: Request, vlan_id: int):
     
     todas_interfaces = get_interfaces()
     
-    # Filtra dispositivos nesta VLAN
+    # LISTA 1: QUEM JÁ ESTÁ AQUI (Membros Atuais)
     dispositivos_conectados = [
         intf for intf in todas_interfaces 
         if int(intf['switchport']['access']['vlan']) == vlan_id
     ]
 
-    # Filtra dispositivos disponiveis (noutras VLANs)
-    dispositivos_disponiveis = [
-        intf for intf in todas_interfaces 
-        if int(intf['switchport']['access']['vlan']) != vlan_id
-    ]
+    # LISTA 2: QUEM PODE ENTRAR (Apenas Livres da VLAN 1)
+    # Regras:
+    # 1. Deve estar na VLAN 1 (Default)
+    # 2. Não pode ser o Gateway (Proteção)
+    # 3. Obviamente, não mostramos esta lista se já estivermos a ver a própria VLAN 1
+    
+    dispositivos_disponiveis = []
+    
+    if vlan_id != 1: # Se não for a VLAN default, procuramos candidatos nela
+        dispositivos_disponiveis = [
+            intf for intf in todas_interfaces 
+            if int(intf['switchport']['access']['vlan']) == 1 
+            and "gateway" not in intf['description'].lower() # Protege o Gateway
+        ]
 
     return templates.TemplateResponse("vlan_topology.html", {
         "request": request,
@@ -54,6 +66,8 @@ async def vlan_topology(request: Request, vlan_id: int):
         "devices": dispositivos_conectados,
         "available": dispositivos_disponiveis
     })
+
+# ... (Manter a rota topology_update igual, pois ela já manda para a VLAN correta)
 
 @router.post("/topology/update")
 async def topology_update(
@@ -80,3 +94,4 @@ async def assign_page(request: Request):
 async def assign_post(request: Request, interface_name: str = Form(...), vlan_id: int = Form(...)):
     assign_vlan(interface_name, vlan_id)
     return RedirectResponse(url="/assign", status_code=303)
+

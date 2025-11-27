@@ -16,13 +16,31 @@ vlans_db = [
 # Interfaces (Portas) - Começam todas na VLAN 1
 # No mock_router.py, substitui a lista interfaces_db por esta:
 
+# mock_router.py
+
 interfaces_db = [
-    {"name": "1", "description": "PC3", "vlan": 10},
-    {"name": "2", "description": "PC4", "vlan": 10},
-    {"name": "3", "description": "PC5", "vlan": 20},
-    {"name": "4", "description": "PC6", "vlan": 20},
-    {"name": "5", "description": "Router1_Gateway", "vlan": 1},
-    {"name": "6", "description": "Livre", "vlan": 1}
+    # --- VLAN 10 (Vendas) ---
+    {"name": "1", "description": "Laptop_Gerente_Vendas", "vlan": 10},
+    {"name": "2", "description": "Telefone_IP_Cisco_8800", "vlan": 10},
+    {"name": "3", "description": "Tablet_POS_Caixa", "vlan": 10},
+
+    # --- VLAN 20 (TI/Servidores) ---
+    {"name": "4", "description": "Servidor_Rack_Dell", "vlan": 20},
+    {"name": "5", "description": "Storage_NAS_Backup", "vlan": 20},
+    {"name": "6", "description": "PC_Admin_Senior", "vlan": 20},
+
+    # --- VLAN 1 (Livres / Default) ---
+    # Estes estão à espera de serem movidos para novas VLANs (ex: criares uma VLAN 30 'IoT' ou 40 'Seguranca')
+    {"name": "7", "description": "Camara_CCTV_Entrada", "vlan": 1},
+    {"name": "8", "description": "Leitor_Biometrico_Porta", "vlan": 1},
+    {"name": "9", "description": "Access_Point_Wifi_Lobby", "vlan": 1},
+    {"name": "10", "description": "Smart_TV_Sala_Reuniao", "vlan": 1},
+    {"name": "11", "description": "Impressora_Laser_Corredor", "vlan": 1},
+    {"name": "12", "description": "Termostato_Inteligente_AC", "vlan": 1},
+    {"name": "13", "description": "Relogio_Ponto_Digital", "vlan": 1},
+
+    # --- GATEWAY (Protegido) ---
+    {"name": "24", "description": "Router_Gateway_Internet", "vlan": 1} 
 ]
 
 # --- ENDPOINTS VLAN (JÁ EXISTIAM) ---
